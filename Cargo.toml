@@ -1,0 +1,9 @@
+[package]
+name = "yant"
+version = "0.1.0"
+authors = ["penumbra23"]
+edition = "2018"
+
+[dependencies]
+clap = "2.33.1"
+curl = "0.4.29"
