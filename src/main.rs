@@ -1,17 +1,8 @@
-use std::io::{stdout, Write};
 use clap::{Arg, App, SubCommand};
-use curl::easy::{Easy, List};
 use std::panic;
+use std::str;
 
-use std::net::TcpStream;
-use std::io::prelude::*;
-
-fn validate_http_method(method: &String) {
-    match method.as_str() {
-        "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD" => (),
-        _ => panic!("Not a valid HTTP method!"),
-    }
-}
+mod protocol;
 
 fn main() {
     // Set custom panic hook
@@ -23,7 +14,7 @@ fn main() {
         }));
     }
     
-    let matches = App::new("yant")
+    let app = App::new("yant")
                         .version("1.0")
                         .author("penumbra23 <glbranimir@gmail.com>")
                         .about("Send requests over modern day network protocols")
@@ -60,52 +51,60 @@ fn main() {
                                     .required(true)
                                     .help("Target IP address & port of the TCP server socket (i.e. localhost:7788)"))
                                 .arg(Arg::with_name("data")
-                                .short("d")
-                                .long("data")
-                                .takes_value(true)
-                                .required(true)
-                                .help("Data inside the TCP payload")))
+                                    .short("d")
+                                    .long("data")
+                                    .takes_value(true)
+                                    .required(true)
+                                    .help("Data inside the TCP payload"))
+                                .arg(Arg::with_name("wait")
+                                    .short("w")
+                                    .long("wait")
+                                    .help("Waits for the server to respond and prints the message")))
+                        .subcommand(SubCommand::with_name("udp")
+                            .about("Sends UDP packets to the specified target")
+                                .arg(Arg::with_name("target")
+                                    .short("t")
+                                    .long("target")
+                                    .takes_value(true)
+                                    .required(true)
+                                    .help("Target IP address & port of the UDP server socket (i.e. localhost:7788)"))
+                                .arg(Arg::with_name("data")
+                                    .short("d")
+                                    .long("data")
+                                    .takes_value(true)
+                                    .required(true)
+                                    .help("Data inside the UDP payload"))
+                                .arg(Arg::with_name("wait")
+                                    .short("w")
+                                    .long("wait")
+                                    .help("Waits for the server to respond and prints the message")))
+                        .subcommand(SubCommand::with_name("icmp")
+                            .about("Sends UDP packets to the specified target")
+                                .arg(Arg::with_name("target")
+                                    .short("t")
+                                    .long("target")
+                                    .takes_value(true)
+                                    .required(true)
+                                    .help("Target IP address & port of the host (i.e. localhost:7788)"))
+                                .arg(Arg::with_name("count")
+                                    .short("n")
+                                    .long("count")
+                                    .takes_value(true)
+                                    .default_value("4")
+                                    .help("Number of ICMP requests to make (default: 4)"))
+                                .arg(Arg::with_name("data")
+                                    .short("d")
+                                    .long("data")
+                                    .takes_value(true)
+                                    .help("Send buffer payload data")))
                         .get_matches();
 
-    if let Some(matches) = matches.subcommand_matches("http") {
-        let mut method = String::from("GET");
-        let server = matches.value_of("target").unwrap();
-        let payload = String::from(matches.value_of("body").unwrap());
-
-        let mut headers = List::new();
-
-        if let Some(header_vals) = matches.values_of("headers") {
-            for x in header_vals.collect::<Vec<_>>() {
-                headers.append(x).unwrap();
-            }
-        }
-
-        if matches.is_present("method") {
-            method = String::from(matches.value_of("method").unwrap().to_uppercase());
-        }
-
-        validate_http_method(&method);
-
-        let mut easy = Easy::new();
-        easy.url(server).unwrap();
-        easy.custom_request(&method.to_uppercase()).unwrap();
-        easy.http_headers(headers).unwrap();
-        easy.post_fields_copy(payload.as_bytes()).unwrap();
-        easy.write_function(|data| {
-            stdout().write_all(data).unwrap();
-            Ok(data.len())
-        }).unwrap();
-        easy.perform().unwrap();
-    } else if let Some(matches) = matches.subcommand_matches("tcp") {
-        let server = matches.value_of("target").unwrap();
-        let data = String::from(matches.value_of("data").unwrap());
-
-        let mut stream = TcpStream::connect(server).unwrap();
-
-        stream.write(&data.as_bytes()).unwrap();
-        let mut buff = vec![];
-        stream.read_to_end(&mut buff).unwrap();
-        println!("{:?}", buff);
-        stdout().write_all(&buff).unwrap();
+    // Match the command
+    match app.subcommand() {
+        ("http", Some(matches)) => protocol::http::handle_http(&matches),
+        ("tcp", Some(matches)) => protocol::tcp::handle_tcp(&matches),
+        ("udp", Some(matches)) => protocol::udp::handle_udp(&matches),
+        ("icmp", Some(matches)) => protocol::icmp::handle_icmp(&matches),
+        _ => panic!("Unknown subcommand"),
     }
 }
