@@ -29,7 +29,7 @@ pub fn handle_http(matches: &ArgMatches) {
     easy.http_headers(headers).unwrap();
     easy.post_fields_copy(payload.as_bytes()).unwrap();
     easy.write_function(|data| {
-        println!("{:?}", str::from_utf8(&data[..data.len()]).unwrap());
+        println!("{}", str::from_utf8(&data[..data.len()]).unwrap());
         Ok(data.len())
     }).unwrap();
     easy.perform().unwrap();

@@ -14,6 +14,6 @@ pub fn handle_tcp(matches: &ArgMatches) {
     if matches.is_present("wait") {
         let mut buff = vec![0; 4096];
         let received = stream.read(&mut buff).unwrap();
-        println!("{:?}", str::from_utf8(&buff[..received]).unwrap());
+        println!("{}", str::from_utf8(&buff[..received]).unwrap());
     }
 }

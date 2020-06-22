@@ -12,7 +12,7 @@ pub fn handle_udp(matches: &ArgMatches) {
     if matches.is_present("wait") {
         let mut buff = vec![0; 4096];
         match socket.recv(&mut buff) {
-            Ok(received) => println!("{:?}", str::from_utf8(&buff[..received]).unwrap()),
+            Ok(received) => println!("{}", str::from_utf8(&buff[..received]).unwrap()),
             Err(e) => panic!("{}", e),
         }
     }
