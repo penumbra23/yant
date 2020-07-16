@@ -14,16 +14,17 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help    Prints this message or the help of the given subcommand(s)
-    http    Sends a HTTP request
-    icmp    Sends UDP packets to the specified target
-    tcp     Connects and sends a message over TCP
-    udp     Sends UDP packets to the specified target
+    help    	Prints this message or the help of the given subcommand(s)
+    http    	Sends a HTTP request
+    icmp    	Sends UDP packets to the specified target
+    tcp     	Connects and sends a message over TCP
+    udp     	Sends UDP packets to the specified target
+    jsonrpc	Invokes a JSON RPC method on a remote server
 
 EXAMPLES:
-	yant http --target https://ipinfo.io/json
-	yant icmp --target 8.8.8.8
-	yant tcp --target 45.22.12.23:6777 --data "hello"
+    yant http --target https://ipinfo.io/json
+    yant icmp --target 8.8.8.8
+    yant tcp --target 45.22.12.23:6777 --data "hello"
 ```
 ## Contribute
 
