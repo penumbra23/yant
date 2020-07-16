@@ -13,8 +13,8 @@ fn main() {
             }
         }));
     }
-    
-    let app = App::new("yant")
+
+    let mut app = App::new("yant")
                         .version("1.0")
                         .author("penumbra23 <glbranimir@gmail.com>")
                         .about("Send requests over modern day network protocols")
@@ -134,16 +134,20 @@ fn main() {
                                     .short("id")
                                     .long("id")
                                     .takes_value(true)
-                                    .help("Unique request identifier (default: random GUID)")))
-                        .get_matches();
+                                    .help("Unique request identifier (default: random GUID)")));
+
+    let mut help = Vec::new();
+    app.write_long_help(&mut help).expect("Failed to get help!");
+
+    let matches = app.get_matches();
 
     // Match the command
-    match app.subcommand() {
+    match matches.subcommand() {
         ("http", Some(matches)) => protocol::http::handle_http(&matches),
         ("tcp", Some(matches)) => protocol::tcp::handle_tcp(&matches),
         ("udp", Some(matches)) => protocol::udp::handle_udp(&matches),
         ("icmp", Some(matches)) => protocol::icmp::handle_icmp(&matches),
         ("jsonrpc", Some(matches)) => protocol::jsonrpc::handle_jsonrpc(&matches),
-        _ => panic!("Unknown subcommand"),
+        _ => { println!("{}", str::from_utf8(&help[..help.len()]).unwrap()); () },
     }
 }
